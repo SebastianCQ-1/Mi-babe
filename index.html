@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>Para ti ✨</title>
+  <meta name="theme-color" content="#ff6b6b" />
+  <style>
+    :root{
+      --bg1:#ff9a9e; --bg2:#fad0c4; --bg3:#fbc2eb;
+      --card:#ffffff; --text:#1d1d1f; --accent:#ff6b6b;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Helvetica,Arial,sans-serif; color:var(--text);
+      background: linear-gradient(135deg,var(--bg1),var(--bg2) 40%,var(--bg3));
+      display:flex; align-items:center; justify-content:center;
+      overflow:hidden;
+    }
+    .wrap{width:min(480px,92vw); position:relative}
+    .card{
+      background:var(--card); border-radius:22px; padding:22px 20px; box-shadow:0 20px 50px rgba(0,0,0,.15);
+      text-align:center; backdrop-filter:saturate(150%) blur(8px);
+    }
+    h1{margin:6px 0 2px; font-size:1.8rem; line-height:1.1}
+    p{margin:8px 0; font-size:1.05rem}
+    .muted{opacity:.7; font-size:.95rem}
+    .btn{appearance:none; border:0; background:var(--accent); color:#fff; padding:14px 16px; font-weight:700; border-radius:16px; cursor:pointer; width:100%; font-size:1.05rem; transition:transform .08s ease, box-shadow .2s ease}
+    .btn:active{transform:scale(.98)}
+    .tag{display:inline-flex; align-items:center; gap:8px; background:#fff3f4; color:#b3133b; padding:6px 10px; border-radius:999px; font-weight:600; font-size:.85rem}
+    .heart{width:18px; height:18px; display:inline-block; position:relative; transform:rotate(-45deg)}
+    .heart:before,.heart:after{content:""; position:absolute; width:18px; height:18px; background:var(--accent); border-radius:50%}
+    .heart:before{left:9px}
+    .heart:after{top:-9px}
+
+    .hidden{display:none}
+    .msg{margin-top:14px; text-align:left; line-height:1.5; font-size:1.05rem}
+    .signature{margin-top:14px; font-weight:700}
+    .footer{margin-top:12px; font-size:.9rem}
+    .input{
+      display:flex; gap:10px; margin:12px 0 6px
+    }
+    input[type="text"]{
+      flex:1; padding:12px 14px; border-radius:12px; border:1px solid #eee; font-size:1rem
+    }
+
+    /* Floating hearts background */
+    .float-heart{position:absolute; pointer-events:none; opacity:.25; animation:rise linear forwards}
+    @keyframes rise{to{transform:translateY(-110vh) scale(1.3); opacity:0}}
+
+    /* Reveal overlay */
+    .cover{
+      position:relative; overflow:hidden; border-radius:18px; background: radial-gradient(1200px 1200px at 50% 120%, #fff0 40%, #fff 42%);
+    }
+    .hero{
+      aspect-ratio: 16/9; width:100%; border-radius:16px; background:#ffe3e3;
+      display:flex; align-items:center; justify-content:center; position:relative;
+    }
+    .hero h2{margin:0; font-size:1.5rem}
+
+    .type{border-right:2px solid var(--accent); white-space:pre-wrap; overflow:hidden}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div id="bg"></div>
+
+    <div class="card">
+      <div class="tag"><span class="heart"></span> Hecho con cariño</div>
+
+      <h1 id="title">Para ti 💖</h1>
+      <p class="muted">Toca el botón y baja el volumen si estás en clase 😉</p>
+
+      <div class="input">
+        <input id="name" type="text" placeholder="Escribe su nombre (opcional)"/>
+        <button class="btn" id="setName">Ok</button>
+      </div>
+
+      <div class="cover">
+        <div class="hero" id="hero">
+          <h2>✨ Toca para abrir ✨</h2>
+        </div>
+      </div>
+
+      <button class="btn" id="open">Abrir sorpresa</button>
+
+      <div id="content" class="hidden">
+        <p id="typed" class="msg type"></p>
+        <p class="signature" id="from"></p>
+        <div class="footer muted">Puedes guardar esta página como acceso directo en tu pantalla de inicio.</div>
+      </div>
+    </div>
+  </div>
+
+  <audio id="chime" preload="auto">
+    <source src="data:audio/mp3;base64,//uQZAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQAA..." type="audio/mp3">
+  </audio>
+
+  <script>
+    // ——— Personaliza aquí (opcional) ———
+    const YOUR_NAME = "Sebas";         // Tu nombre o apodo
+    const MAIN_MESSAGE = (
+`Desde hace tiempo quería decirte algo:
+
+Me encantas. 💫
+
+Me haces sonreír con solo leerte, y me gustaría invitarte a tomar un café (o helado) cuando puedas. ¿Te late? 😊`
+    );
+    // ——— Fin de personalización ———
+
+    const titleEl = document.getElementById('title');
+    const typedEl = document.getElementById('typed');
+    const openBtn = document.getElementById('open');
+    const content = document.getElementById('content');
+    const fromEl = document.getElementById('from');
+    const hero = document.getElementById('hero');
+    const nameInput = document.getElementById('name');
+    const setNameBtn = document.getElementById('setName');
+    const chime = document.getElementById('chime');
+
+    // Floating hearts generator
+    const bg = document.getElementById('bg');
+    function spawnHeart(){
+      const h = document.createElement('div');
+      h.className='float-heart';
+      const size = 10 + Math.random()*22;
+      h.style.width = size+'px';
+      h.style.height = size+'px';
+      h.style.left = Math.random()*100+'vw';
+      h.style.bottom = '-40px';
+      h.style.transform = `translateY(0) scale(${.7+Math.random()*1.2})`;
+      h.style.animationDuration = (8+Math.random()*6)+'s';
+      h.style.filter = `hue-rotate(${Math.random()*30-15}deg)`;
+      h.innerHTML = '<span class="heart" style="transform:rotate(-45deg) scale('+ (size/18) +')"></span>'
+      bg.appendChild(h);
+      setTimeout(()=>bg.removeChild(h), 14000);
+    }
+    setInterval(spawnHeart, 600);
+
+    // Tap to open animation
+    hero.addEventListener('click', () => openBtn.click());
+
+    setNameBtn.addEventListener('click', () => {
+      const n = nameInput.value.trim();
+      if(n){ titleEl.textContent = `Para ${n} 💖`; }
+    });
+
+    function typeText(el, text, speed=28){
+      return new Promise(resolve =>{
+        let i=0;
+        const timer = setInterval(()=>{
+          el.textContent = text.slice(0, i++);
+          if(i>text.length){ clearInterval(timer); el.classList.remove('type'); resolve(); }
+        }, speed);
+      });
+    }
+
+    function confettiBurst(x, y){
+      for(let i=0;i<50;i++){
+        const p = document.createElement('span');
+        p.style.position='fixed'; p.style.left=x+'px'; p.style.top=y+'px';
+        p.style.width=p.style.height = (4+Math.random()*6)+'px';
+        p.style.background='hsl('+Math.floor(Math.random()*360)+',90%,60%)';
+        p.style.borderRadius: Math.random()>.6 ? '50%' : '4px';
+        p.style.zIndex=99; p.style.pointerEvents='none';
+        document.body.appendChild(p);
+        const a1 = (Math.random()*2-1)*160; // angle
+        const v = 3+Math.random()*7;        // velocity
+        const t = 700+Math.random()*900;    // time
+        const dx = Math.cos(a1)*v*16;
+        const dy = Math.sin(a1)*v*16;
+        p.animate([
+          { transform:'translate(0,0) rotate(0deg)', opacity:1 },
+          { transform:`translate(${dx}px, ${dy}px) rotate(${Math.random()*720-360}deg)`, opacity:0 }
+        ], { duration:t, easing:'cubic-bezier(.2,.8,.2,1)', fill:'forwards' });
+        setTimeout(()=>p.remove(), t+50);
+      }
+    }
+
+    openBtn.addEventListener('click', async (e)=>{
+      // sound (optional; may be blocked until user gesture)
+      try{ chime.currentTime = 0; await chime.play(); }catch{}
+
+      confettiBurst(window.innerWidth/2, window.innerHeight*.25);
+      document.querySelector('.cover').classList.add('hidden');
+      content.classList.remove('hidden');
+      await typeText(typedEl, MAIN_MESSAGE);
+      fromEl.textContent = `— ${YOUR_NAME}`;
+    });
+
+    // iOS add-to-homescreen hint
+    (function(){
+      const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+      const standalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+      if(isIOS && !standalone){
+        const hint = document.createElement('div');
+        hint.style.position='fixed'; hint.style.left='12px'; hint.style.right='12px'; hint.style.bottom='12px'; hint.style.zIndex='999';
+        hint.style.background='rgba(255,255,255,.95)'; hint.style.padding='10px 12px'; hint.style.borderRadius='12px'; hint.style.boxShadow='0 6px 24px rgba(0,0,0,.15)';
+        hint.style.fontSize='.95rem';
+        hint.innerHTML = 'Tip: Pulsa <b>Compartir</b> → <b>“Añadir a pantalla de inicio”</b> para guardarlo.';
+        document.body.appendChild(hint);
+        setTimeout(()=>hint.remove(), 7000);
+      }
+    })();
+  </script>
+</body>
+</html>
