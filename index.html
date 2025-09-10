@@ -1,154 +1,221 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-  <title>Para ti ✨</title>
-  <meta name="theme-color" content="#ff6b6b" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Para ti ❤️</title>
   <style>
-    :root{
-      --bg1:#ff9a9e; --bg2:#fad0c4; --bg3:#fbc2eb;
-      --card:#ffffff; --text:#1d1d1f; --accent:#ff6b6b;
+    /* === Estilos base === */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Helvetica,Arial,sans-serif; color:var(--text);
-      background: linear-gradient(135deg,var(--bg1),var(--bg2) 40%,var(--bg3));
-      display:flex; align-items:center; justify-content:center;
-      overflow:hidden;
-    }
-    .wrap{width:min(480px,92vw); position:relative}
-    .card{
-      background:var(--card); border-radius:22px; padding:22px 20px; box-shadow:0 20px 50px rgba(0,0,0,.15);
-      text-align:center; backdrop-filter:saturate(150%) blur(8px);
-    }
-    h1{margin:6px 0 2px; font-size:1.8rem; line-height:1.1}
-    p{margin:8px 0; font-size:1.05rem}
-    .muted{opacity:.7; font-size:.95rem}
-    .btn{appearance:none; border:0; background:var(--accent); color:#fff; padding:14px 16px; font-weight:700; border-radius:16px; cursor:pointer; width:100%; font-size:1.05rem; transition:transform .08s ease, box-shadow .2s ease}
-    .btn:active{transform:scale(.98)}
-    .tag{display:inline-flex; align-items:center; gap:8px; background:#fff3f4; color:#b3133b; padding:6px 10px; border-radius:999px; font-weight:600; font-size:.85rem}
-    .heart{width:18px; height:18px; display:inline-block; position:relative; transform:rotate(-45deg)}
-    .heart:before,.heart:after{content:""; position:absolute; width:18px; height:18px; background:var(--accent); border-radius:50%}
-    .heart:before{left:9px}
-    .heart:after{top:-9px}
-
-    .hidden{display:none}
-    .msg{margin-top:14px; text-align:left; line-height:1.5; font-size:1.05rem}
-    .signature{margin-top:14px; font-weight:700}
-    .footer{margin-top:12px; font-size:.9rem}
-    .input{
-      display:flex; gap:10px; margin:12px 0 6px
-    }
-    input[type="text"]{
-      flex:1; padding:12px 14px; border-radius:12px; border:1px solid #eee; font-size:1rem
+    body {
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at top, #ff9a9e, #fad0c4, #fbc2eb);
+      overflow: hidden;
+      font-family: 'Arial', sans-serif;
+      color: #fff;
     }
 
-    /* Floating hearts background */
-    .float-heart{position:absolute; pointer-events:none; opacity:.25; animation:rise linear forwards}
-    @keyframes rise{to{transform:translateY(-110vh) scale(1.3); opacity:0}}
-
-    /* Reveal overlay */
-    .cover{
-      position:relative; overflow:hidden; border-radius:18px; background: radial-gradient(1200px 1200px at 50% 120%, #fff0 40%, #fff 42%);
+    /* === Fondo animado con partículas === */
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 0;
     }
-    .hero{
-      aspect-ratio: 16/9; width:100%; border-radius:16px; background:#ffe3e3;
-      display:flex; align-items:center; justify-content:center; position:relative;
-    }
-    .hero h2{margin:0; font-size:1.5rem}
 
-    .type{border-right:2px solid var(--accent); white-space:pre-wrap; overflow:hidden}
+    /* === Contenedor principal === */
+    .container {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      padding: 20px;
+      max-width: 400px;
+    }
+
+    /* === Corazón animado === */
+    .heart {
+      width: 120px;
+      height: 120px;
+      background-color: #ff5c8d;
+      position: relative;
+      margin: 20px auto;
+      transform: rotate(-45deg);
+      animation: heartbeat 1.2s infinite ease-in-out;
+    }
+
+    .heart::before,
+    .heart::after {
+      content: "";
+      position: absolute;
+      width: 120px;
+      height: 120px;
+      background-color: #ff5c8d;
+      border-radius: 50%;
+    }
+
+    .heart::before {
+      top: -60px;
+      left: 0;
+    }
+
+    .heart::after {
+      left: 60px;
+      top: 0;
+    }
+
+    @keyframes heartbeat {
+      0%, 100% {
+        transform: rotate(-45deg) scale(1);
+      }
+      50% {
+        transform: rotate(-45deg) scale(1.2);
+      }
+    }
+
+    /* === Mensaje animado === */
+    .message {
+      font-size: 1.2rem;
+      line-height: 1.5;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeUp 2s forwards;
+      animation-delay: 1.5s;
+      white-space: pre-line;
+    }
+
+    @keyframes fadeUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* === Botón === */
+    .btn {
+      margin-top: 20px;
+      padding: 12px 24px;
+      border: none;
+      background: #ff5c8d;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 1rem;
+      transition: background 0.3s;
+      z-index: 20;
+      position: relative;
+    }
+
+    .btn:hover {
+      background: #ff2e63;
+    }
+
+    /* Ocultar contenido al inicio */
+    .hidden {
+      display: none;
+    }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div id="bg"></div>
+  <canvas id="particles"></canvas>
 
-    <div class="card">
-      <div class="tag"><span class="heart"></span> Hecho con cariño amor</div>
+  <div class="container">
+    <h1>Para ti 💖</h1>
+    <p>Presiona el botón para abrir tu sorpresa ✨</p>
+    <button class="btn" id="revealBtn">Abrir sorpresa</button>
 
-      <h1 id="title">Para ti 💖</h1>
-      <p class="muted">Eres hermosa</p>
-
-      <div class="input">
-        <input id="name" type="text" placeholder="escribe lo que quieres jeje"/>
-        <button class="btn" id="setName">Ok</button>
-      </div>
-
-      <div class="cover">
-        <div class="hero" id="hero">
-          <h2>✨ Toca para abrir ✨</h2>
-        </div>
-      </div>
-
-      <button class="btn" id="open">Abrir sorpresa</button>
-
-      <div id="content" class="hidden">
-        <p id="typed" class="msg type"></p>
-        <p class="signature" id="from"></p>
-        <div class="footer muted">Se hizo lo que se pudo jeje</div>
-      </div>
+    <div id="surprise" class="hidden">
+      <div class="heart"></div>
+      <p class="message" id="message"></p>
     </div>
   </div>
 
   <script>
-    // ===== Personalización =====
-    const YOUR_NAME = "Sebastian";  // Tu nombre o apodo
-    const MAIN_MESSAGE = (
-`Te amo Guane ❤️
+    // ===== Personaliza aquí =====
+    const YOUR_NAME = "Sebastian";
+    const MAIN_MESSAGE = `Te amo mucho, mi niña hermosa. ❤️
 
-Ya falta menos para que nos veamos 😉`
-    );
-    // ===== Fin Personalización =====
+Cada momento contigo es especial,
+gracias por hacerme sonreír cada día. 🌸
 
-    // === Elementos HTML ===
-    const openBtn = document.getElementById('open');
-    const content = document.getElementById('content');
-    const typedEl = document.getElementById('typed');
-    const fromEl = document.getElementById('from');
+Ya falta menos para que nos veamos 😉
+— ${YOUR_NAME}`;
+    // ============================
 
-    // Función para escribir el texto letra por letra
-    function typeText(el, text, speed = 28) {
-      return new Promise(resolve => {
-        let i = 0;
-        const timer = setInterval(() => {
-          el.textContent = text.slice(0, i++);
-          if (i > text.length) {
-            clearInterval(timer);
-            resolve();
-          }
-        }, speed);
-      });
-    }
+    const revealBtn = document.getElementById('revealBtn');
+    const surprise = document.getElementById('surprise');
+    const messageEl = document.getElementById('message');
 
-    // Evento del botón
-    openBtn.addEventListener('click', async (e) => {
-      document.querySelector('.cover').classList.add('hidden'); // Oculta la portada
-      content.classList.remove('hidden');                       // Muestra el contenido
-      await typeText(typedEl, MAIN_MESSAGE);                    // Escribe tu mensaje
-      fromEl.textContent = `— ${YOUR_NAME}`;                    // Muestra tu firma
+    revealBtn.addEventListener('click', () => {
+      revealBtn.style.display = 'none';
+      surprise.classList.remove('hidden');
+      messageEl.textContent = MAIN_MESSAGE;
     });
 
-    // Tip para instalar como app en iOS
-    (function(){
-      const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-      const standalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-      if(isIOS && !standalone){
-        const hint = document.createElement('div');
-        hint.style.position='fixed'; hint.style.left='12px'; hint.style.right='12px'; hint.style.bottom='12px'; hint.style.zIndex='999';
-        hint.style.background='rgba(255,255,255,.95)'; hint.style.padding='10px 12px'; hint.style.borderRadius='12px'; hint.style.boxShadow='0 6px 24px rgba(0,0,0,.15)';
-        hint.style.fontSize='.95rem';
-        hint.innerHTML = 'Tip: Pulsa <b>Compartir</b> → <b>“Añadir a pantalla de inicio”</b> para guardarlo.';
-        document.body.appendChild(hint);
-        setTimeout(()=>hint.remove(), 7000);
+    // ===== Partículas animadas de fondo =====
+    const canvas = document.getElementById('particles');
+    const ctx = canvas.getContext('2d');
+
+    let particlesArray = [];
+    const numParticles = 80;
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    class Particle {
+      constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.size = Math.random() * 2 + 1;
+        this.speedX = (Math.random() - 0.5) * 0.5;
+        this.speedY = (Math.random() - 0.5) * 0.5;
       }
-    })();
+      update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+
+        // Reaparecer si se sale de la pantalla
+        if (this.x < 0 || this.x > canvas.width) this.x = Math.random() * canvas.width;
+        if (this.y < 0 || this.y > canvas.height) this.y = Math.random() * canvas.height;
+      }
+      draw() {
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    function initParticles() {
+      particlesArray = [];
+      for (let i = 0; i < numParticles; i++) {
+        particlesArray.push(new Particle());
+      }
+    }
+
+    function animateParticles() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particlesArray.forEach(particle => {
+        particle.update();
+        particle.draw();
+      });
+      requestAnimationFrame(animateParticles);
+    }
+
+    initParticles();
+    animateParticles();
   </script>
 </body>
 </html>
-
-
-
-
