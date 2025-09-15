@@ -1,221 +1,170 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Para ti ❤️</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Te Amo ❤️</title>
   <style>
-    /* === Estilos base === */
-    * {
+    html, body {
+      height: 100%;
       margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    body {
-      height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: radial-gradient(circle at top, #ff9a9e, #fad0c4, #fbc2eb);
+      background: radial-gradient(ellipse at center, #0c0c14 0%, #06060a 100%);
       overflow: hidden;
-      font-family: 'Arial', sans-serif;
-      color: #fff;
     }
+    canvas { display:block; }
 
-    /* === Fondo animado con partículas === */
-    canvas {
-      position: absolute;
-      top: 0;
-      left: 0;
-      z-index: 0;
-    }
-
-    /* === Contenedor principal === */
-    .container {
-      position: relative;
-      z-index: 10;
+    /* Título fijo arriba */
+    h1 {
+      position: fixed;
+      top: 15px;
+      width: 100%;
       text-align: center;
-      padding: 20px;
-      max-width: 400px;
+      color: #ff6b6b;
+      font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+      font-size: 2.2rem;
+      text-shadow: 0 0 15px rgba(255, 107, 107, 0.7);
+      z-index: 10;
+      pointer-events: none;
+      letter-spacing: 2px;
     }
 
-    /* === Corazón animado === */
-    .heart {
-      width: 120px;
-      height: 120px;
-      background-color: #ff5c8d;
-      position: relative;
-      margin: 20px auto;
-      transform: rotate(-45deg);
-      animation: heartbeat 1.2s infinite ease-in-out;
+    .hint {
+      position: fixed;
+      left: 12px;
+      bottom: 12px;
+      color: #fff;
+      font: 12px/1.4 system-ui, Segoe UI, Roboto, Inter, Arial, sans-serif;
+      opacity:.7;
+      user-select:none;
+      background: rgba(255,255,255,.06);
+      padding:.5rem .6rem;
+      border-radius:.6rem;
+      backdrop-filter: blur(6px);
     }
 
-    .heart::before,
-    .heart::after {
-      content: "";
-      position: absolute;
-      width: 120px;
-      height: 120px;
-      background-color: #ff5c8d;
-      border-radius: 50%;
-    }
-
-    .heart::before {
-      top: -60px;
-      left: 0;
-    }
-
-    .heart::after {
-      left: 60px;
-      top: 0;
-    }
-
-    @keyframes heartbeat {
-      0%, 100% {
-        transform: rotate(-45deg) scale(1);
-      }
-      50% {
-        transform: rotate(-45deg) scale(1.2);
-      }
-    }
-
-    /* === Mensaje animado === */
-    .message {
-      font-size: 1.2rem;
-      line-height: 1.5;
-      opacity: 0;
-      transform: translateY(20px);
-      animation: fadeUp 2s forwards;
-      animation-delay: 1.5s;
-      white-space: pre-line;
-    }
-
-    @keyframes fadeUp {
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    /* === Botón === */
-    .btn {
-      margin-top: 20px;
-      padding: 12px 24px;
-      border: none;
-      background: #ff5c8d;
-      color: white;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: bold;
-      font-size: 1rem;
-      transition: background 0.3s;
-      z-index: 20;
-      position: relative;
-    }
-
-    .btn:hover {
-      background: #ff2e63;
-    }
-
-    /* Ocultar contenido al inicio */
-    .hidden {
-      display: none;
-    }
+    /* SVG oculto, solo para extraer la ruta */
+    svg { position: absolute; width:0; height:0; overflow:hidden; }
   </style>
 </head>
 <body>
-  <canvas id="particles"></canvas>
+  <h1>Te Amo</h1>
+  <div class="hint">Arrastra para orbitar • Rueda para zoom</div>
 
-  <div class="container">
-    <h1>Para ti 💖</h1>
-    <p>Presiona el botón para abrir tu sorpresa ✨</p>
-    <button class="btn" id="revealBtn">Abrir sorpresa</button>
+  <!-- Ruta SVG para formar el corazón -->
+  <svg viewBox="0 0 600 552" aria-hidden="true">
+    <path id="heartPath"
+      d="M300,520
+         C 50,350   0,200   150,120
+         C 240,70  300,120  300,160
+         C 300,120 360,70   450,120
+         C 600,200 550,350  300,520 Z" />
+  </svg>
 
-    <div id="surprise" class="hidden">
-      <div class="heart"></div>
-      <p class="message" id="message"></p>
-    </div>
-  </div>
+  <script type="module">
+    import * as THREE from "https://unpkg.com/three@0.165.0/build/three.module.js";
+    import { OrbitControls } from "https://unpkg.com/three@0.165.0/examples/jsm/controls/OrbitControls.js";
+    import { gsap } from "https://cdn.skypack.dev/gsap@3.12.5";
 
-  <script>
-    // ===== Personaliza aquí =====
-    const YOUR_NAME = "Sebastian";
-    const MAIN_MESSAGE = `Te amo mucho, mi niña hermosa. ❤️
+    /* CONFIGURACIÓN */
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.Fog(0x000000, 1200, 2200);
 
-Cada momento contigo es especial,
-gracias por hacerme sonreír cada día. 🌸
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 5000);
+    camera.position.set(0, 0, 500);
 
-Ya falta menos para que nos veamos 😉
-— ${YOUR_NAME}`;
-    // ============================
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
 
-    const revealBtn = document.getElementById('revealBtn');
-    const surprise = document.getElementById('surprise');
-    const messageEl = document.getElementById('message');
+    /* CONTROLES */
+    const controlsWebGL = new OrbitControls(camera, renderer.domElement);
+    controlsWebGL.enableDamping = true;
+    controlsWebGL.dampingFactor = 0.06;
+    controlsWebGL.minDistance = 200;
+    controlsWebGL.maxDistance = 1400;
 
-    revealBtn.addEventListener('click', () => {
-      revealBtn.style.display = 'none';
-      surprise.classList.remove('hidden');
-      messageEl.textContent = MAIN_MESSAGE;
+    /* LUZ */
+    scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+
+    /* TIMELINE GSAP */
+    const tl = gsap.timeline({ repeat: -1, yoyo: true });
+
+    /* PARTÍCULAS */
+    const path = document.querySelector("#heartPath");
+    const length = path.getTotalLength();
+
+    const vertices = [];
+    const colors = [];
+    const tmpColor = new THREE.Color();
+
+    for (let i = 0; i < length; i += 0.15) {
+      const point = path.getPointAtLength(i);
+      const vector = new THREE.Vector3(point.x, -point.y, 0);
+
+      // Agregar dispersión para darle volumen
+      vector.x += (Math.random() - 0.5) * 30;
+      vector.y += (Math.random() - 0.5) * 30;
+      vector.z += (Math.random() - 0.5) * 70;
+      vertices.push(vector);
+
+      // Color rosado con variación
+      tmpColor.setHSL(0.96 + (Math.random() * 0.02 - 0.01), 0.75, 0.60 + (Math.random() * 0.08 - 0.04));
+      colors.push(tmpColor.r, tmpColor.g, tmpColor.b);
+
+      // Animación desde el centro
+      tl.from(vector, {
+        x: 600 / 2,
+        y: -552 / 2,
+        z: 0,
+        ease: "power2.inOut",
+        duration: gsap.utils.random(2, 5)
+      }, i * 0.002);
+    }
+
+    const geometry = new THREE.BufferGeometry().setFromPoints(vertices);
+    geometry.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
+
+    const material = new THREE.PointsMaterial({
+      size: 3,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.95,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false
     });
 
-    // ===== Partículas animadas de fondo =====
-    const canvas = document.getElementById('particles');
-    const ctx = canvas.getContext('2d');
+    const particles = new THREE.Points(geometry, material);
+    particles.position.x -= 600 / 2;
+    particles.position.y += 552 / 2;
+    scene.add(particles);
 
-    let particlesArray = [];
-    const numParticles = 80;
+    // Latido
+    gsap.to(particles.scale, {
+      x: 1.04, y: 1.04, z: 1.04,
+      duration: 0.9, ease: "sine.inOut", yoyo: true, repeat: -1
+    });
 
-    function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+    // Oscilación de la escena
+    gsap.fromTo(scene.rotation, { y: -0.2 }, {
+      y: 0.2, repeat: -1, yoyo: true, ease: "power2.inOut", duration: 3
+    });
+
+    /* RENDER */
+    function render() {
+      requestAnimationFrame(render);
+      controlsWebGL.update();
+      geometry.setFromPoints(vertices);
+      renderer.render(scene, camera);
     }
+    render();
 
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
-
-    class Particle {
-      constructor() {
-        this.x = Math.random() * canvas.width;
-        this.y = Math.random() * canvas.height;
-        this.size = Math.random() * 2 + 1;
-        this.speedX = (Math.random() - 0.5) * 0.5;
-        this.speedY = (Math.random() - 0.5) * 0.5;
-      }
-      update() {
-        this.x += this.speedX;
-        this.y += this.speedY;
-
-        // Reaparecer si se sale de la pantalla
-        if (this.x < 0 || this.x > canvas.width) this.x = Math.random() * canvas.width;
-        if (this.y < 0 || this.y > canvas.height) this.y = Math.random() * canvas.height;
-      }
-      draw() {
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fill();
-      }
-    }
-
-    function initParticles() {
-      particlesArray = [];
-      for (let i = 0; i < numParticles; i++) {
-        particlesArray.push(new Particle());
-      }
-    }
-
-    function animateParticles() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      particlesArray.forEach(particle => {
-        particle.update();
-        particle.draw();
-      });
-      requestAnimationFrame(animateParticles);
-    }
-
-    initParticles();
-    animateParticles();
+    /* RESIZE */
+    window.addEventListener("resize", () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
   </script>
 </body>
 </html>
